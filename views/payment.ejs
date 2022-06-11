@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Buy Products</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+      .container {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f5f5f5;
+      }
+
+      .product {
+        width: 250px;
+        padding: 10px;
+        height: auto;
+        background-color: white;
+        border-radius: 5px;
+        border: 2px solid black;
+      }
+
+      .product_img {
+        width: 100%;
+        height: 250px;
+        object-fit: contain;
+        border-bottom: 1px solid black;
+      }
+
+      .description {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      #btn {
+        width: 100%;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body class="container">
+    <div class="product">
+      <img
+        src="https://5.imimg.com/data5/OU/BF/LC/SELLER-24394604/sanitary-pad-500x500.jpg"
+        alt="Pad"
+        class="product_img"
+      />
+      <div class="description">
+        <h3>Pads</h3>
+        <h4>Rs <%=amt%></h4>
+      </div>
+      <button type="button" id="btn">BUY</button>
+    </div>
+  </body>
+  <script type="text/javascript">
+    // Create an instance of the Stripe object with your publishable API key
+    var stripe = Stripe("<%= key %>");
+    var checkoutButton = document.getElementById("btn");
+
+    checkoutButton.addEventListener("click", function () {
+      fetch("/payment", {
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({
+          product: {
+            name: "Pad",
+            amount: 10,
+            quantity: <%=amt%>,
+          },
+        }),
+      })
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (session) {
+          return stripe.redirectToCheckout({ sessionId: session.id });
+        })
+        .then(function (result) {
+          // If redirectToCheckout fails due to a browser or network
+          // error, you should display the localized error message to your
+          // customer using error.message.
+          if (result.error) {
+            alert(result.error.message);
+          }
+        })
+        .catch(function (error) {
+          console.error("Error:", error);
+        });
+    });
+  </script>
+</html>
